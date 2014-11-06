@@ -12,6 +12,7 @@ var express    = require('express'),
     login      = require('./api/login.js'),
     register   = require('./api/register.js'),
     newgoal    = require('./api/newgoal.js'),
+    getgoals   = require('./api/getgoals.js'),
     finishgoal = require('./api/finishgoal.js'),
     editgoal   = require('./api/editgoal.js'),
     removegoal = require('./api/removegoal.js');
@@ -29,6 +30,8 @@ app.post('/push/goal/', newgoal.post);
 app.post('/push/goal/finish/', finishgoal.post);
 app.post('/push/goal/edit/', editgoal.post);
 app.post('/push/goal/remove/', removegoal.post);
+
+app.get('/pull/goals', getgoals.get);
 
 // Providing a JSON version of a 404.
 app.all('*', function (req, res) {
