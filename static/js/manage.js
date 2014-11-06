@@ -1,120 +1,179 @@
-// Name        : manage.js
+// Name        : manage.jsx
 // Author(s)   : Cerek Hillen
-// Date Created: 10/16/2014
-// Date Changed: 10/21/2014
+// Date Created: 11/6/2014
+// Date Changed: 11/6/2014
 //
 // Description:
-//   Some front-end stuff for the manage page.
+//   This is an attempt to model the manage page in React.
 
 //////////
 // Code //
 
-// Running the AJAX call to the server for putting a new goal.
-function pushGoal() {
-    var json = joinJSON($('#goalForm').serializeArray());
-    json.userId = $.cookie('logged');
-    json.userId = json.userId.slice(3, json.userId.length - 1);
+// The submit panel on the left side.
+var SubmitPanel = React.createClass({
+    onSubmit: function (e) {
+        e.preventDefault();
 
-    if (json.isPublic === undefined)
-        json.isPublic = 'off';
+        console.log(this.refs.goal.getDOMNode().value);
+        console.log(this.refs.public.getDOMNode().checked);
 
-    $.ajax({
-        url: '/api/push/goal',
-        type: 'POST',
-        contentType: 'application/json;charset=UTF-8',
-        data: JSON.stringify(json)
-    }).done(function (data) {
-        if (data.success)  {
-            $('#noGoals').hide();
-            $('#goalTitleInput').val('');
-            var gl = $('#goalList');
-            gl.prepend(data.block);
+        this.refs.goal.getDOMNode().value = '';
+    },
 
-            var li = gl.find('[data-gid="' + data.gid + '"]');
-            li.find('.goal-editor').hide();
+    render: function () {
+        return (
+            <div className="col-md-3">
+                <form onSubmit={this.onSubmit} id="newGoalForm">
+                    <div className="form-group">
+                        <label>Your New Goal:</label>
+                        <input className="form-control" type="text" placeholder="Enter your new goal!" ref="goal" required />
+                    </div>
 
-            li.find('.goal-editor').submit(pushEditGoal);
-            li.find('.goal-done').click(goalDone);
-            li.find('.goal-edit').click(goalEdit);
-            li.find('.goal-remove').click(goalRemove);
-        }
-        else
-            dangerMessage(data.message);
-    });
-    return false;
-}
+                    <div className="checkbox">
+                        <label>
+                            <input type="checkbox" ref="public" />
+                            <span>Public?</span>
+                        </label>
+                    </div>
 
-// The function to run upon a goal-editor being ran.
-function pushEditGoal() {
-    var json = joinJSON($(this).serializeArray());
-    json.gid = $(this).closest('li').attr('data-gid');
-
-    $.ajax({
-        url: '/api/push/goal/edit/',
-        type: 'POST',
-        contentType: 'application/json;charset=UTF-8',
-        data: JSON.stringify(json)
-    }).done(function (data) {
-        if (data.success) {
-            var li = $(this).closest('li');
-            li.find('.goal-value').html(li.find('.form-control').val());
-            li.find('.goal-container').show();
-            $(this).hide();
-        } else
-            dangerMessage(data.message);
-    }.bind(this));
-    return false;
-}
-
-// The function to run when a goalDone is pressed.
-function goalDone() {
-    $.ajax({
-        url: '/api/push/goal/finish/',
-        type: 'POST',
-        contentType: 'application/json;charset=UTF-8',
-        data: JSON.stringify({ gid: $(this).closest('li').attr('data-gid') })
-    }).done (function (data) {
-        if (data.success) {
-            $('#goalList').find('[data-gid="' + data.gid + '"]').replaceWith(data.block);
-            $('#goalList').find('[data-gid="' + data.gid + '"]').find('.goal-remove').click(goalRemove);
-        } else
-            dangerMessage(data.message);
-    });
-}
-
-// The function to run when a goalEdit is pressed.
-function goalEdit() {
-    var li = $(this).closest('li');
-    var editor = li.find('.goal-editor');
-
-    editor.find('.form-control').val(li.find('.goal-value').html());
-    editor.show();
-    li.find('.goal-container').hide();
-}
-
-// The function to run when a goalRemove is passed.
-function goalRemove() {
-    $.ajax({
-        url: '/api/push/goal/remove/',
-        type: 'POST',
-        contentType: 'application/json;charset=UTF-8',
-        data: JSON.stringify({ gid: $(this).closest('li').attr('data-gid') })
-    }).done (function (data) {
-        if (data.success) {
-            var li = $(this).closest('li');
-            $(li).fadeOut(200, function() { $(li).remove(); } );
-        } else
-            dangerMessage(data.message);
-    }.bind(this));
-}
-
-// Page initialization code.
-$(document).ready(function () {
-    $('.goal-editor').hide();
-
-    $('#goalForm').submit(pushGoal);
-    $('.goal-editor').submit(pushEditGoal);
-    $('.goal-done').click(goalDone);
-    $('.goal-edit').click(goalEdit);
-    $('.goal-remove').click(goalRemove);
+                    <div className="form-group">
+                        <button className="btn btn-default" type="submit">Submit</button>
+                    </div>
+                </form>
+            </div>
+        )
+    }
 });
+
+// A single goal.
+var Goal = React.createClass({
+    getInitialState: function() {
+        return { mode: 'default' };
+    },
+
+    finishGoal: function() {
+        console.log('Finish' + this.props.gid);
+    },
+
+    editGoal: function () {
+        console.log('Edit' + this.props.gid);
+    },
+
+    deleteGoal: function () {
+        console.log('Delete' + this.props.gid);
+    },
+
+    defaultState: function () {
+        return (
+            <li>
+                <h3>
+                    {this.props.goal}
+                    <span className="left-margined">
+                        <button className="btn btn-success" onClick={this.finishGoal} >
+                            <span className="glyphicon glyphicon-ok"></span>
+                        </button>
+
+                        <button className="btn btn-info" onClick={this.editGoal}>
+                            <span className="glyphicon glyphicon-pencil"></span>
+                        </button>
+
+                        <button className="btn btn-danger" onClick={this.deleteGoal}>
+                            <span className="glyphicon glyphicon-remove"></span>
+                        </button>
+                    </span>
+                </h3>
+            </li>
+        );
+    },
+
+    finishedState: function() {
+        return (
+            <li>
+                <h3 className="done-goal">
+                    {this.props.goal}
+
+                    <span className="left-margined">
+                        <button className="btn btn-danger" onClick={this.deleteGoal}>
+                            <span className="glyphicon glyphicon-remove"></span>
+                        </button>
+                    </span>
+                </h3>
+            </li>
+        )
+    },
+
+    editingState: function() {
+
+    },
+
+    render: function () {
+        if (this.state.mode == 'default')
+            return this.defaultState();
+        else
+            return this.finishedState();
+    }
+});
+
+// The list of goals.
+var GoalList = React.createClass({
+    getInitialState: function () {
+        this.requestNew();
+        return {
+            loading: true,
+            goals: []
+        };
+    },
+
+    requestNew: function () {
+        setTimeout(function () {
+            $.ajax({
+                // TODO: AJAX request.
+            }).done(function (data) {
+                this.setState({
+                    loading: false,
+                    goals: data.goals
+                })
+            });
+        }, 0);
+    },
+
+    render: function () {
+        if (this.state.loading) {
+            return (
+                <h3 className="text-center">Loading...</h3>
+            )
+        } else {
+            var goals = [];
+            this.goals.forEach(function (goal) {
+                goals.push(
+                    <Goal gid={goal.gid} goal={goal.goal} />
+                );
+            });
+
+            return (
+                <div className="col-md-9">
+                    <ul>
+                        {goals}
+                    </ul>
+                </div>
+            );
+        }
+    }
+});
+
+// The page's application container.
+var App = React.createClass({
+    render: function () {
+        return (
+            <div className="row">
+                <SubmitPanel />
+                <GoalList />
+            </div>
+        );
+    }
+});
+
+// Rendering the application.
+React.render((
+    <App />
+), document.getElementById('wrapper'));
