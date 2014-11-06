@@ -125,16 +125,18 @@ var GoalList = React.createClass({
     },
 
     requestNew: function () {
+        var self = this;
         setTimeout(function () {
             $.ajax({
-                // TODO: AJAX request.
+                url   : '/api/pull/goals',
+                method: 'GET'
             }).done(function (data) {
-                this.setState({
+                self.setState({
                     loading: false,
-                    goals: data.goals
+                    goals  : data.goals
                 })
             });
-        }, 0);
+        }, 10);
     },
 
     render: function () {
@@ -142,11 +144,15 @@ var GoalList = React.createClass({
             return (
                 <h3 className="text-center">Loading...</h3>
             )
+        } else if (this.state.goals.length === 0) {
+            return (
+                <h3 className="text-center">You have not set any goals</h3>
+            );
         } else {
             var goals = [];
-            this.goals.forEach(function (goal) {
+            this.state.goals.forEach(function (goal) {
                 goals.push(
-                    <Goal gid={goal.gid} goal={goal.goal} />
+                    <Goal gid={goal._id} goal={goal.value} />
                 );
             });
 
