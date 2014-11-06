@@ -10,9 +10,9 @@ block css-extra
   link(rel="stylesheet" href="/static/css/manage.css")
 
 block content
-  #wrapper
   if logged
     h1.text-center Manage your goals!
+    #wrapper
     .row
       .col-md-3
         form(id="goalForm" role="form")

@@ -13,7 +13,10 @@
 var SubmitPanel = React.createClass({
     onSubmit: function (e) {
         e.preventDefault();
+
         console.log(this.refs.goal.getDOMNode().value);
+        console.log(this.refs.public.getDOMNode().checked);
+
         this.refs.goal.getDOMNode().value = '';
     },
 
@@ -26,8 +29,11 @@ var SubmitPanel = React.createClass({
                         <input className="form-control" type="text" placeholder="Enter your new goal!" ref="goal" required />
                     </div>
 
-                    <div className="form-group">
-
+                    <div className="checkbox">
+                        <label>
+                            <input type="checkbox" ref="public" />
+                            <span>Public?</span>
+                        </label>
                     </div>
 
                     <div className="form-group">
@@ -41,27 +47,117 @@ var SubmitPanel = React.createClass({
 
 // A single goal.
 var Goal = React.createClass({
-    render: function () {
+    getInitialState: function() {
+        return { mode: 'default' };
+    },
+
+    finishGoal: function() {
+        console.log('Finish' + this.props.gid);
+    },
+
+    editGoal: function () {
+        console.log('Edit' + this.props.gid);
+    },
+
+    deleteGoal: function () {
+        console.log('Delete' + this.props.gid);
+    },
+
+    defaultState: function () {
         return (
             <li>
-                <h3>{this.props.goal}</h3>
+                <h3>
+                    {this.props.goal}
+                    <span className="left-margined">
+                        <button className="btn btn-success" onClick={this.finishGoal} >
+                            <span className="glyphicon glyphicon-ok"></span>
+                        </button>
+
+                        <button className="btn btn-info" onClick={this.editGoal}>
+                            <span className="glyphicon glyphicon-pencil"></span>
+                        </button>
+
+                        <button className="btn btn-danger" onClick={this.deleteGoal}>
+                            <span className="glyphicon glyphicon-remove"></span>
+                        </button>
+                    </span>
+                </h3>
             </li>
         );
+    },
+
+    finishedState: function() {
+        return (
+            <li>
+                <h3 className="done-goal">
+                    {this.props.goal}
+
+                    <span className="left-margined">
+                        <button className="btn btn-danger" onClick={this.deleteGoal}>
+                            <span className="glyphicon glyphicon-remove"></span>
+                        </button>
+                    </span>
+                </h3>
+            </li>
+        )
+    },
+
+    editingState: function() {
+
+    },
+
+    render: function () {
+        if (this.state.mode == 'default')
+            return this.defaultState();
+        else
+            return this.finishedState();
     }
 });
 
 // The list of goals.
 var GoalList = React.createClass({
+    getInitialState: function () {
+        this.requestNew();
+        return {
+            loading: true,
+            goals: []
+        };
+    },
+
+    requestNew: function () {
+        setTimeout(function () {
+            $.ajax({
+                // TODO: AJAX request.
+            }).done(function (data) {
+                this.setState({
+                    loading: false,
+                    goals: data.goals
+                })
+            });
+        }, 0);
+    },
+
     render: function () {
-        return (
-            <div className="col-md-9">
-                <ul>
-                    <Goal goal="finish this shit" />
-                    <Goal goal="no seriously" />
-                    <Goal goal="haha" />
-                </ul>
-            </div>
-        );
+        if (this.state.loading) {
+            return (
+                <h3 className="text-center">Loading...</h3>
+            )
+        } else {
+            var goals = [];
+            this.goals.forEach(function (goal) {
+                goals.push(
+                    <Goal gid={goal.gid} goal={goal.goal} />
+                );
+            });
+
+            return (
+                <div className="col-md-9">
+                    <ul>
+                        {goals}
+                    </ul>
+                </div>
+            );
+        }
     }
 });
 
