@@ -13,23 +13,5 @@ block content
   if logged
     h1.text-center Manage your goals!
     #wrapper
-    .row
-      .col-md-3
-        form(id="goalForm" role="form")
-          .form-group
-            label(for="goalTitleInput") Your New Goal:
-            input(id="goalTitleInput" class="form-control" type="text" name="goal" placeholder="Enter your new goal!" required)
-          .checkbox
-            label
-              input(type="checkbox" name="isPublic")
-              span Public?
-          .form-group
-            button(class="btn btn-default" type="submit") Submit
-      .col-md-9
-        if data.goals.length == 0
-          h3#noGoals(class="text-center") You do not have any goals yet.
-        ul#goalList
-          - for (var i = 0; i < data.goals.length; i++)
-            +goalBlock(data.goals[i])
   else
     h1.text-center You must log in to manage using Gualy.
