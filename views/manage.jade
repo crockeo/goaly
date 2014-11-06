@@ -4,11 +4,13 @@ include ./goal.jade
 block js-extra
   script(src="/static/js/jsonutils.js")
   script(src="/static/js/manage.js")
+  script(type="text/jsx" src="/static/js/n_manage.js")
 
 block css-extra
   link(rel="stylesheet" href="/static/css/manage.css")
 
 block content
+  #wrapper
   if logged
     h1.text-center Manage your goals!
     .row

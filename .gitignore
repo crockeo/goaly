@@ -9,3 +9,4 @@ static/fonts/
 static/js/jquery.min.js
 static/js/bootstrap.min.js
 static/js/react.min.js
+static/js/JSXTransformer.js

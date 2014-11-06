@@ -59,4 +59,7 @@ gulp.task('deploy', function () {
     // Moving over react.
     gulp.src('bower_components/react/react.min.js')
         .pipe(gulp.dest('static/js/'));
+
+    gulp.src('bower_components/react/JSXTransformer.js')
+        .pipe(gulp.dest('static/js/'));
 });
