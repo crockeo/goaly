@@ -17,7 +17,6 @@ function pushGoal() {
 
     if (json.isPublic === undefined)
         json.isPublic = 'off';
-    console.log(json.isPublic);
 
     $.ajax({
         url: '/api/push/goal',
@@ -111,7 +110,6 @@ function goalRemove() {
 
 // Page initialization code.
 $(document).ready(function () {
-    console.log($('.goal-editor'));
     $('.goal-editor').hide();
 
     $('#goalForm').submit(pushGoal);
