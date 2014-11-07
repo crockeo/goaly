@@ -57,10 +57,9 @@ var Goal = React.createClass({
             return { mode: 'default' };
     },
 
-    finishGoal: function() {
-        console.log('Finish' + this.props.gid);
+    performAction: function(suffix) {
         $.ajax({
-            url        : '/api/push/goal/finish',
+            url        : '/api/push/goal/' + suffix,
             method     : 'POST',
             contentType: 'application/json;charset=UTF-8',
             data       : JSON.stringify({ gid: this.props.gid })
@@ -72,13 +71,13 @@ var Goal = React.createClass({
         }.bind(this));
     },
 
+    finishGoal: function() { this.performAction('finish') },
+
     editGoal: function () {
         console.log('Edit' + this.props.gid);
     },
 
-    deleteGoal: function () {
-        console.log('Delete' + this.props.gid);
-    },
+    deleteGoal: function () { this.performAction('remove') },
 
     defaultState: function () {
         return (
