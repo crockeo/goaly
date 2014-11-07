@@ -51,11 +51,25 @@ var SubmitPanel = React.createClass({
 // A single goal.
 var Goal = React.createClass({
     getInitialState: function() {
-        return { mode: 'default' };
+        if (this.props.completed)
+            return { mode: 'completed' };
+        else
+            return { mode: 'default' };
     },
 
     finishGoal: function() {
         console.log('Finish' + this.props.gid);
+        $.ajax({
+            url        : '/api/push/goal/finish',
+            method     : 'POST',
+            contentType: 'application/json;charset=UTF-8',
+            data       : JSON.stringify({ gid: this.props.gid })
+        }).done(function (data) {
+            if (!data.success)
+                dangerMessage(data.message);
+            else
+                this.props.requestNew();
+        }.bind(this));
     },
 
     editGoal: function () {
@@ -106,20 +120,25 @@ var Goal = React.createClass({
     },
 
     editingState: function() {
-
+        return (
+            <li>
+                <h3>
+                    lulwut
+                </h3>
+            </li>
+        )
     },
 
     render: function () {
-        if (this.state.mode == 'default')
-            return this.defaultState();
-        else
+        if (this.props.completed)
             return this.finishedState();
+        else
+            return this.defaultState();
     }
 });
 
 // The list of goals.
-var GoalList = React.createClass({
-    render: function () {
+var GoalList = React.createClass({render: function () {
         if (this.props.goals.length === 0) {
             return (
                 <h3 className="text-center">You have not set any goals</h3>
@@ -128,9 +147,9 @@ var GoalList = React.createClass({
             var goals = [];
             this.props.goals.forEach(function (goal) {
                 goals.push(
-                    <Goal gid={goal._id} goal={goal.value} />
+                    <Goal requestNew={this.props.requestNew} completed={goal.completed} gid={goal._id} goal={goal.value} />
                 );
-            });
+            }.bind(this));
 
             return (
                 <div className="col-md-9">
@@ -154,18 +173,17 @@ var App = React.createClass({
     },
 
     requestNew: function () {
-        var self = this;
         setTimeout(function () {
             $.ajax({
                 url   : '/api/pull/goals',
                 method: 'GET'
             }).done(function (data) {
-                self.setState({
+                this.setState({
                     loading: false,
                     goals  : data.goals
-                })
-            });
-        }, 10);
+                });
+            }.bind(this));
+        }.bind(this), 5);
     },
 
     submitGoal: function (json, callback) {
@@ -197,7 +215,7 @@ var App = React.createClass({
             return (
                 <div className="row">
                     <SubmitPanel submitGoal={this.submitGoal} />
-                    <GoalList goals={this.state.goals} />
+                    <GoalList requestNew={this.requestNew} goals={this.state.goals} />
                 </div>
             );
         }
