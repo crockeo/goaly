@@ -51,10 +51,7 @@ var SubmitPanel = React.createClass({
 // A single goal.
 var Goal = React.createClass({
     getInitialState: function() {
-        if (this.props.completed)
-            return { mode: 'completed' };
-        else
-            return { mode: 'default' };
+        return { mode: 'default' }
     },
 
     performAction: function(suffix) {
@@ -74,10 +71,17 @@ var Goal = React.createClass({
     finishGoal: function() { this.performAction('finish') },
 
     editGoal: function () {
-        console.log('Edit' + this.props.gid);
+        this.setState({ mode: 'editing' });
     },
 
-    deleteGoal: function () { this.performAction('remove') },
+    completeEditGoal: function (e) {
+        e.preventDefault();
+        this.setState({ mode: 'default' });
+    },
+
+    deleteGoal: function () {
+        this.performAction('remove')
+    },
 
     defaultState: function () {
         return (
@@ -121,18 +125,25 @@ var Goal = React.createClass({
     editingState: function() {
         return (
             <li>
-                <h3>
-                    lulwut
-                </h3>
+                <form className="form-inline" onSubmit={this.completeEditGoal}>
+                    <input className="form-control" type="text" ref="goalEdit" placeholder={this.props.goal} />
+                    <button className="btn btn-default">
+                        <span className="glyphicon glyphicon-ok"></span>
+                    </button>
+                </form>
             </li>
         )
     },
 
     render: function () {
-        if (this.props.completed)
-            return this.finishedState();
-        else
-            return this.defaultState();
+        if (this.state.mode === 'editing') {
+            return this.editingState();
+        } else {
+            if (this.props.completed)
+                return this.finishedState();
+            else
+                return this.defaultState();
+        }
     }
 });
 
