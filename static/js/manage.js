@@ -14,10 +14,13 @@ var SubmitPanel = React.createClass({
     onSubmit: function (e) {
         e.preventDefault();
 
-        console.log(this.refs.goal.getDOMNode().value);
-        console.log(this.refs.public.getDOMNode().checked);
-
-        this.refs.goal.getDOMNode().value = '';
+        this.props.submitGoal({
+            goal    : this.refs.goal.getDOMNode().value,
+            isPublic: this.refs.public.getDOMNode().checked
+        }, function (err) {
+            if (!err)
+                this.refs.goal.getDOMNode().value = '';
+        }.bind(this));
     },
 
     render: function () {
@@ -116,41 +119,14 @@ var Goal = React.createClass({
 
 // The list of goals.
 var GoalList = React.createClass({
-    getInitialState: function () {
-        this.requestNew();
-        return {
-            loading: true,
-            goals: []
-        };
-    },
-
-    requestNew: function () {
-        var self = this;
-        setTimeout(function () {
-            $.ajax({
-                url   : '/api/pull/goals',
-                method: 'GET'
-            }).done(function (data) {
-                self.setState({
-                    loading: false,
-                    goals  : data.goals
-                })
-            });
-        }, 10);
-    },
-
     render: function () {
-        if (this.state.loading) {
-            return (
-                <h3 className="text-center">Loading...</h3>
-            )
-        } else if (this.state.goals.length === 0) {
+        if (this.props.goals.length === 0) {
             return (
                 <h3 className="text-center">You have not set any goals</h3>
             );
         } else {
             var goals = [];
-            this.state.goals.forEach(function (goal) {
+            this.props.goals.forEach(function (goal) {
                 goals.push(
                     <Goal gid={goal._id} goal={goal.value} />
                 );
@@ -169,13 +145,62 @@ var GoalList = React.createClass({
 
 // The page's application container.
 var App = React.createClass({
+    getInitialState: function () {
+        this.requestNew();
+        return {
+            loading: true,
+            goals  : []
+        }
+    },
+
+    requestNew: function () {
+        var self = this;
+        setTimeout(function () {
+            $.ajax({
+                url   : '/api/pull/goals',
+                method: 'GET'
+            }).done(function (data) {
+                self.setState({
+                    loading: false,
+                    goals  : data.goals
+                })
+            });
+        }, 10);
+    },
+
+    submitGoal: function (json, callback) {
+        json.userId = $.cookie('logged');
+        json.userId = json.userId.slice(3, json.userId.length - 1);
+
+        $.ajax({
+            url        : '/api/push/goal',
+            method     : 'POST',
+            contentType: 'application/json;encoding=UTF-8',
+            data       : JSON.stringify(json)
+        }).done(function (data) {
+            if (!data.success) {
+                dangerMessage(data.message);
+                callback(true);
+            } else {
+                callback(false);
+                this.requestNew();
+            }
+        }.bind(this));
+    },
+
     render: function () {
-        return (
-            <div className="row">
-                <SubmitPanel />
-                <GoalList />
-            </div>
-        );
+        if (this.state.loading) {
+            return (
+                <h3 className="text-center">Loading...</h3>
+            )
+        } else {
+            return (
+                <div className="row">
+                    <SubmitPanel submitGoal={this.submitGoal} />
+                    <GoalList goals={this.state.goals} />
+                </div>
+            );
+        }
     }
 });
 
