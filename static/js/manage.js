@@ -76,7 +76,23 @@ var Goal = React.createClass({
 
     completeEditGoal: function (e) {
         e.preventDefault();
-        this.setState({ mode: 'default' });
+
+        $.ajax({
+            url        : '/api/push/goal/edit',
+            method     : 'POST',
+            contentType: 'application/json;charset=UTF-8',
+            data       : JSON.stringify({
+                gid    : this.props.gid,
+                newtext: this.refs.goalEdit.getDOMNode().value
+            })
+        }).done(function (data) {
+            if (!data.success)
+                dangerMessage(data.message);
+            else {
+                this.setState({ mode: 'default' });
+                this.props.requestNew();
+            }
+        }.bind(this));
     },
 
     deleteGoal: function () {
