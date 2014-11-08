@@ -209,7 +209,7 @@ var App = React.createClass({
                     goals  : data.goals
                 });
             }.bind(this));
-        }.bind(this), 5);
+        }.bind(this), 0);
     },
 
     submitGoal: function (json, callback) {
@@ -235,7 +235,12 @@ var App = React.createClass({
     render: function () {
         if (this.state.loading) {
             return (
-                <h3 className="text-center">Loading...</h3>
+                <div>
+                    <h3 className="text-center">Loading...</h3>
+                    <div className="row text-center">
+                        <img src="/static/imgs/ajax-loading.gif" />
+                    </div>
+                </div>
             )
         } else {
             return (
